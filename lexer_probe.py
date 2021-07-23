@@ -31,10 +31,16 @@ class Token:
 
 
 def tokenize(data):
-    keywords = ['fn', 'let', 'if', 'for', 'while']
-    id_alphabet = '0123456789_abcdefjhijklmnopqrstuvwxyzABCDEFJHIJKLMNOPQRSTUVWXYZ'
-    res = []
     data_list = data.split()
+    res = []
+
+    lex_keywords(data_list)
+    lex_identifier(data_list)
+    lex_chars(data_list)
+
+
+def lex_keywords(data_list):
+    res = []
 
     for key in data_list:
         if key == 'fn':
@@ -55,11 +61,19 @@ def tokenize(data):
             res.append(Token(TOK_SMALLER, key))
         elif key == '!=':
             res.append(Token(TOK_NOT, key))
+    print(res)
+    return res
 
-        elif key not in keywords:
+
+def lex_identifier(data_list):
+    keywords = ['fn', 'let', 'if', 'for', 'while']
+    id_alphabet = '0123456789abcdefjhijklmnopqrstuvwxyzABCDEFJHIJKLMNOPQRSTUVWXYZ_'
+    res = []
+
+    for key in data_list:
+        if key not in keywords:
             state = 1
             id_name = ''
-            is_char = False
 
             for char in key:
                 if state == 1:
@@ -68,26 +82,34 @@ def tokenize(data):
                     elif char in id_alphabet:
                         id_name += char
                         state = 2
-                    else:                       # CHARS
-                        id_name += char
-                        state = 1
-                        is_char = True
                 elif state == 2:
                     if char in id_alphabet:
                         id_name += char
                         state = 2
                     else:
                         return id_name
+            res.append(Token(TOK_ID, id_name))
+    print(res)
+    return res
 
-            if is_char is True:
-                res.append(Token(TOK_CHAR, id_name))
-            else:
-                res.append(Token(TOK_ID, id_name))
 
-            # state = 1
-            # id_name = ''
+def lex_chars(data_list):
+    keywords = ['fn', 'let', 'if', 'for', 'while']
+    id_alphabet = '0123456789abcdefjhijklmnopqrstuvwxyzABCDEFJHIJKLMNOPQRSTUVWXYZ_'
+    id_name = ''
+    res = []
+
+    for key in data_list:
+        if key not in keywords and key not in id_alphabet:
+
+            for char in key:
+                id_name += char
+
+            res.append(Token(TOK_CHAR, id_name))
+            id_name = ''
+    print(res)
     return res
 
 
 if __name__ == '__main__':
-    print(tokenize('if a = b let data jhc1_1'))
+    print(tokenize('if a = b @! let data jhc1_1'))
