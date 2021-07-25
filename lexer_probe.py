@@ -34,82 +34,107 @@ def tokenize(data):
     data_list = data.split()
     res = []
 
-    lex_keywords(data_list)
-    lex_identifier(data_list)
-    lex_chars(data_list)
-
-
-def lex_keywords(data_list):
-    res = []
-
     for key in data_list:
-        if key == 'fn':
-            res.append(Token(TOK_FN, key))
-        elif key == 'let':
-            res.append(Token(TOK_LET, key))
-        elif key == 'if':
-            res.append(Token(TOK_IF, key))
-        elif key == 'for':
-            res.append(Token(TOK_FOR, key))
-        elif key == 'while':
-            res.append(Token(TOK_WHILE, key))
-        elif key == '==':
-            res.append(Token(TOK_EQ, key))
-        elif key == '>=':
-            res.append(Token(TOK_BIGGER, key))
-        elif key == '<=':
-            res.append(Token(TOK_SMALLER, key))
-        elif key == '!=':
-            res.append(Token(TOK_NOT, key))
-    print(res)
+        if lex_keywords(key) is not None:
+            res.append(lex_keywords(key))
+        else:
+            if lex_identifier(key) is not None:
+                res.append(lex_identifier(key))
+            else:
+                if lex_numbers(key) is not None:
+                    res.append(lex_numbers(key))
+                else:
+                    res.append(lex_chars(key))
     return res
 
 
-def lex_identifier(data_list):
-    keywords = ['fn', 'let', 'if', 'for', 'while']
-    id_alphabet = '0123456789abcdefjhijklmnopqrstuvwxyzABCDEFJHIJKLMNOPQRSTUVWXYZ_'
-    res = []
-
-    for key in data_list:
-        if key not in keywords:
-            state = 1
-            id_name = ''
-
-            for char in key:
-                if state == 1:
-                    if char in '0123456789':
-                        return None
-                    elif char in id_alphabet:
-                        id_name += char
-                        state = 2
-                elif state == 2:
-                    if char in id_alphabet:
-                        id_name += char
-                        state = 2
-                    else:
-                        return id_name
-            res.append(Token(TOK_ID, id_name))
-    print(res)
-    return res
+def lex_keywords(key):
+    if key == 'fn':
+        token = (Token(TOK_FN, key))
+    elif key == 'let':
+        token = (Token(TOK_LET, key))
+    elif key == 'if':
+        token = (Token(TOK_IF, key))
+    elif key == 'for':
+        token = (Token(TOK_FOR, key))
+    elif key == 'while':
+        token = (Token(TOK_WHILE, key))
+    elif key == '==':
+        token = (Token(TOK_EQ, key))
+    elif key == '>=':
+        token = (Token(TOK_BIGGER, key))
+    elif key == '<=':
+        token = (Token(TOK_SMALLER, key))
+    elif key == '!=':
+        token = (Token(TOK_NOT, key))
+    else:
+        return None
+    return token
 
 
-def lex_chars(data_list):
-    keywords = ['fn', 'let', 'if', 'for', 'while']
-    id_alphabet = '0123456789abcdefjhijklmnopqrstuvwxyzABCDEFJHIJKLMNOPQRSTUVWXYZ_'
+def lex_identifier(key):
+    id_alphabet = '0123456789abcdefgjhijklmnopqrstuvwxyzABCDEFGJHIJKLMNOPQRSTUVWXYZ_'
+    state = 1
     id_name = ''
-    res = []
 
-    for key in data_list:
-        if key not in keywords and key not in id_alphabet:
-
-            for char in key:
+    for char in key:
+        if state == 1:
+            if char in '0123456789':
+                return None
+            elif char in id_alphabet:
                 id_name += char
+                state = 2
+            else:
+                return None
+        elif state == 2:
+            if char in id_alphabet:
+                id_name += char
+                state = 2
+            else:
+                return id_name
+        else:
+            return None
+    token = (Token(TOK_ID, id_name))
+    return token
 
-            res.append(Token(TOK_CHAR, id_name))
-            id_name = ''
-    print(res)
-    return res
+
+def lex_numbers(key):
+    id_alphabet = '0123456789'
+    state = 1
+    id_number = ''
+
+    for char in key:
+        if state == 1:
+            if char in id_alphabet:
+                id_number += char
+                state = 2
+            else:
+                return None
+        elif state == 2:
+            if char in id_alphabet:
+                id_number += char
+                state = 2
+            elif char == '.':
+                id_number += char
+                state = 3
+            else:
+                return None
+        elif state == 3:
+            if char in id_alphabet:
+                id_number += char
+                state = 3
+            else:
+                return id_number
+        else:
+            return None
+    token = Token(TOK_NUM, id_number)
+    return token
+
+
+def lex_chars(key):
+    token = Token(TOK_CHAR, key)
+    return token
 
 
 if __name__ == '__main__':
-    print(tokenize('if a = b @! let data jhc1_1'))
+    print(tokenize('if a = b @! 12.3 123 let data jhc1_1'))
