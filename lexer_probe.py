@@ -44,7 +44,7 @@ def tokenize(data):
                 if lex_numbers(key) is not None:
                     res.append(lex_numbers(key))
                 else:
-                    res.append(lex_chars(key))
+                    res.extend(lex_chars(key))
     return res
 
 
@@ -91,7 +91,7 @@ def lex_identifier(key):
                 id_name += char
                 state = 2
             else:
-                return id_name
+                return None
         else:
             return None
     token = (Token(TOK_ID, id_name))
@@ -124,7 +124,7 @@ def lex_numbers(key):
                 id_number += char
                 state = 3
             else:
-                return id_number
+                return None
         else:
             return None
     token = Token(TOK_NUM, id_number)
@@ -132,9 +132,9 @@ def lex_numbers(key):
 
 
 def lex_chars(key):
-    token = Token(TOK_CHAR, key)
-    return token
+    res = []
 
-
-if __name__ == '__main__':
-    print(tokenize('if a = b @! 12.3 123 let data jhc1_1'))
+    for char in key:
+        token = Token(TOK_CHAR, char)
+        res.append(token)
+    return res
